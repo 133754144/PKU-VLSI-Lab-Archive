@@ -44,7 +44,7 @@ module alu_tester;
 		#period  sel = 3'b101;
 		#period  sel = 3'b110;
 		#period  sel = 3'b111;
-		#period  $finish;
+		#period  $finish; // Need plus time
 	end
 	//display inputs & outputs as waveform
         initial
