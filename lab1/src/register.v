@@ -38,14 +38,14 @@ endmodule
 `celldefine
 module register_3 (clk, reset, d, q);   
     input clk, reset;
-    input [2:0] d;  // 3 位输入数据
-    output reg [2:0] q;  // 3 位输出数据
+    input [2:0] d;
+    output reg [2:0] q;
     
     always @ (posedge clk or negedge reset) begin
         if (!reset)
-            q <= 0;  // 如果复位，将输出置为0
+            q <= 0; 
         else
-            q <= d;  // 否则，将输入数据 d 存入输出 q
+            q <= d; 
     end
 endmodule
 `endcelldefine
