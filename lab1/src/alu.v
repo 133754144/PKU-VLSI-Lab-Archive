@@ -4,28 +4,19 @@ module alu (in1, in2, sel, out1);
   input  [7:0] in1, in2;
   input  [2:0] sel;
   output reg [7:0] out1;
-
-  // 原有四种逻辑运算结果
   wire [7:0] out_and;
   wire [7:0] out_or;
   wire [7:0] out_xor;
   wire [7:0] out_xnor;
-
   and_cell  u_and  (.in1(in1), .in2(in2), .out1(out_and));
   or_cell   u_or   (.in1(in1), .in2(in2), .out1(out_or));
   xor_cell  u_xor  (.in1(in1), .in2(in2), .out1(out_xor));
   xnor_cell u_xnor (.in1(in1), .in2(in2), .out1(out_xnor));
-
-  // 新增：算术运算
   wire [7:0] out_add = in1 + in2;
   wire [7:0] out_sub = in1 - in2;
-
-  // 新增：移位运算（移位量取 in2[2:0]，8bit 数据足够）
   wire [2:0] shamt   = in2[2:0];
   wire [7:0] out_sll = in1 << shamt;
   wire [7:0] out_srl = in1 >> shamt;
-
-  // 8选1：由 sel 选择最终输出
   always @(*) begin
     case (sel)
       3'b000: out1 = out_and;   // AND
