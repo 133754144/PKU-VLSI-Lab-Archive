@@ -8,7 +8,7 @@ read_hdl top_rtl.v alu.v mux.v register.v
 elaborate rtl_top
 
 #timing constraints
-define_clock -name clk -period 1700 clk
+define_clock -name clk -period 2000 clk
 external_delay -clock clk -input 10 reset
 external_delay -clock clk -input 10 in1*
 external_delay -clock clk -input 10 in2*
