@@ -2,28 +2,28 @@
 module ram_tester;
 	parameter period = 50;
     // DUT I/O
-    reg CLK, CEB, WEB, RSTB;
+    reg clk, CEB, WEB, RSTB;
     reg [7:0] Addr;
     reg [15:0] Data;
     wire [15:0] Q;
     reg [15:0] golden [0:255];
     integer i, err_cnt;
     // DUT
-    ram_256x16 dut (.CLK(CLK), .CEB(CEB), .WEB(WEB), .RSTB(RSTB), .Addr(Addr), .Data(Data), .Q(Q));
+    ram_256x16 dut (.clk(clk), .CEB(CEB), .WEB(WEB), .RSTB(RSTB), .Addr(Addr), .Data(Data), .Q(Q));
     // Clock
     initial begin
-        CLK = 1'b0;
-        forever #(period/2) CLK = ~CLK;
+        clk = 1'b0;
+        forever #(period/2) clk = ~clk;
     end
     // -------- task: write one word (CEB=0, WEB=0) --------
     task do_write(input [7:0] a, input [15:0] d);
         begin
-            @(negedge CLK);
+		    #period;
             CEB <= 1'b0;
             WEB <= 1'b0; // activate
             Addr <= a;
             Data <= d;
-            @(posedge CLK);
+            #period;
             #1;
             golden[a] = d;
             WEB <= 1'b1; // disable write
@@ -34,11 +34,11 @@ module ram_tester;
         reg [15:0] exp;
         begin
             exp = golden[a];
-            @(negedge CLK);
+            #period;
             CEB  <= 1'b0;
             WEB  <= 1'b1; // read
             Addr <= a;
-            @(posedge CLK);
+            #period;
             #1;
             if (Q !== exp) begin
                 err_cnt = err_cnt + 1;
@@ -51,18 +51,18 @@ module ram_tester;
         reg [15:0] q_before;
         begin
             q_before = Q;
-            @(negedge CLK);
+            #period;
             CEB  <= 1'b1; // disable
             WEB  <= 1'b0; // activate
             Addr <= a;
             Data <= d;
-            @(posedge CLK);
+            #period;
             #1;
             if (Q !== q_before) begin
                 err_cnt = err_cnt + 1;
                 $display("[ERROR][%0t] DISABLED-WRITE changed Q! before=0x%04h after=0x%04h",$time, q_before, Q);
             end
-            @(negedge CLK);
+            #period;
             WEB <= 1'b1;
         end
     endtask
@@ -71,11 +71,11 @@ module ram_tester;
         reg [15:0] q_before;
         begin
             q_before = Q;
-            @(negedge CLK);
+            #period;
             CEB  <= 1'b1; // disable
             WEB  <= 1'b1; // read
             Addr <= a;
-            @(posedge CLK);
+            #period;
             #1;
             if (Q !== q_before) begin
                 err_cnt = err_cnt + 1;
@@ -127,5 +127,10 @@ module ram_tester;
         end
         #(period);
         $finish;
+    end
+    // Waveform generation for debugging
+    initial begin
+        $shm_open("ram_test.shm");
+        $shm_probe("AC");
     end
 endmodule
