@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module controller (
     input  wire       clk,
     input  wire       reset,     // 异步复位（active low）
@@ -10,15 +11,15 @@ module controller (
     output wire       done       // 完成信号，高电平有效
     );
     // 定义状态编码
-    typedef enum reg [2:0] {
+    localparam [2:0] 
         S_IDLE  = 3'b000,  // 空闲等待
         S_EXEC1 = 3'b001,  // ALU执行阶段1
         S_EXEC2 = 3'b010,  // ALU执行阶段2（结果可用）
         S_WRITE = 3'b011,  // 写RAM阶段
         S_READ  = 3'b100,  // 读RAM阶段
-        S_DONE  = 3'b101   // 完成阶段
-    } state_t;
-    state_t state, next_state;
+        S_DONE  = 3'b101;   // 完成阶段
+    reg [2:0] state, next_state;
+    reg [7:0] next_mem_addr;
     // 异步复位和状态寄存器更新
     always @(posedge clk or negedge reset) begin
         if (!reset) 
@@ -74,10 +75,17 @@ module controller (
                 next_mem_addr = mem_addr + 8'd1;
                 next_state = S_IDLE; // 返回空闲状态
             end
+            default: begin
+                next_state     = S_IDLE;
+                next_mem_addr  = 8'd0;
+                mem_CEB        = 1'b1;
+                mem_WEB        = 1'b1;
+                input_ld       = 1'b0;
+                result_ld      = 1'b0;
+            end
         endcase
     end
     // 地址寄存器：在复位时清零，在完成阶段更新地址（地址自增）
-    reg [7:0] next_mem_addr;
     always @(posedge clk or negedge reset) begin
         if (!reset) // reset = 0 时有效
             mem_addr <= 8'd0;
